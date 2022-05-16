@@ -1,21 +1,68 @@
 const mysql = require("mysql");
+const { promise_abc } = require("./ab");
+const DBHostType = {
+  local: {
+    type: "localhost",
+    DBName: "cheapresto",
+    user: "root",
+    password: "",
+    port: 3306,
+    url: "https://www.db4free.net/phpMyAdmin/"
 
-const mysql_connection = mysql.createConnection({
-    host: "localhost",port: 3306,user: "root",password: "",
-    database: "database_nodejs_jwt_mysql_user_login_authentication"
+  },
+  online: {
+    type: "db4free.net",
+    DBName: "dbsavindu",
+    user: "savindu",
+    pass: "19990524"
+  }
+}
+
+const MySqlQueryExecute = (SQL_Query_as_STRING) => {
+  return new Promise((resolve, reject) => {
+    const mysql_connection = mysql.createConnection({
+      host: DBHostType.local,
+      port: DBHostType.local.port,
+      user: DBHostType.local.user,
+      password: DBHostType.local.password,
+      database: DBHostType.local.DBName
+    });
+    mysql_connection.connect((err) => {
+      if (err) {// console.log({ Connecting_Id: err.stack });//return;
+        reject(err);
+        mysql_connection.end();
+      }
+      else {
+        //console.log({ Connected_Thread_Id: mysql_connection.threadId });
+        mysql_connection.query(SQL_Query_as_STRING, (err, result) => {
+          if (err) {
+            //console.log({ Error: err });//return err;
+            reject(err);
+            mysql_connection.end();
+          } else {
+            //console.log({ Result: result }); //return { 'result': result };
+            resolve(result);
+            mysql_connection.end();
+          }
+        });
+      }
+    });
   });
 
-  const QueryExecute = (SQL_Query_as_STRING) => {
-          mysql_connection.connect((err)=>{
-               if(err){console.error('Connecting Id : ' + err.stack); return;}
-               else{console.log('Connected thread Id : ' + mysql_connection.threadId); 
-                   mysql_connection.query(SQL_Query_as_STRING,(err,result)=>{
-                      if(err){console.log("Error in queryExecute : ",err); return err;}
-                      else{console.log("Result : ",result); return result; }
-                  });
-               }
-           });  
-  }
-module.exports = {QueryExecute};
-//Other file const {QueryExecute} =  require('./mysq_database');
-//QueryExecute("CREATE TABLE user (id INT.name VARCHAR(255), address VARCHAR(255))")
+}
+
+module.exports = { QueryExecute: async (sql_query) => { return await MySqlQueryExecute(sql_query); } };
+/*Other file const {QueryExecute} =  require('./mysq_database');
+QueryExecute("CREATE TABLE user (id INT.name VARCHAR(255), address VARCHAR(255))")
+.then((res)=>{console.log(res);})
+.catch((err)=>(throw err;))
+var pool = mysql.createPool({
+  connectionLimit: 10,
+  port: DBHostType.local.port,
+  user: DBHostType.local.user,
+  password: DBHostType.local.password,
+  database: DBHostType.local.DBName
+});
+var userTable = "CREATE TABLE users (id INT NOT NULL AUTO_INCREMENT,email VARCHAR(255) NOT NULL,password VARCHAR(255),PRIMARY KEY (id))"
+    
+*/

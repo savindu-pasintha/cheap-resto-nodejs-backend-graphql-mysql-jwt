@@ -1,44 +1,35 @@
-var createError = require('http-errors');
 var express = require('express');
+var createError = require('http-errors');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
-
+var cors = require('cors');
+//var bodyParser = require('body-parser');
+//app.use(bodyParser.json());// support parsing of application/json type post data
+//app.use(bodyParser.urlencoded({ extended: true }));//support parsing of application/x-www-form-urlencoded post data
 //GraphQl with expressexpress-graphql
 var { graphqlHTTP } = require('express-graphql');
 var { buildSchema, graphql } = require('graphql');
-//GraphQl with expressexpress-graphql
-//import typeDefs from './graphQL/schema/typedefs';
-//import resolvers from './graphQL/schema/resolvers';
-
-//Appolo server with Graphql
-//const { ApolloServer, gql } = require('apollo-server-express');
-
 //Here You Can Import All The Http EndPoint Source File Inside The Route Folder
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var jwtAuthenticationRouter = require('./routes/jwt_authentication');
-
-var app = express();
-
+var cheaprestobysavinduRouter = require('./routes/cheaprestobysavindu');
 // View Engine Setup
+var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-
-app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));/**extended: true  =   content type :  form-data not support*   raw , x-ww-form-urlencodel support*/
+app.use(cors({ origin: "http://localhost:3008" }));
+app.use(logger('dev'));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
-//Here You Can Define All The Https Endpoints 
+//Here You Can Define All The Https/Http Endpoints 
 app.use('/', indexRouter); //http://localhost:5000/layout,error
 app.use('/user', usersRouter); //http://localhost:5000/users
 app.use('/jwt', jwtAuthenticationRouter); //http://localhost:5000/jwt/login
-
-
-
+app.use('/api/cheapresto', cheaprestobysavinduRouter);//http://localhost:5000/api/cheapresto
 //GraphQl
 const user_data = [{ id: 1, name: "1savindu", age: 123 }, { id: 2, name: "2savindu", age: 223 }, { id: 3, name: "3savindu", age: 323 }];
 // Construct a schema, using GraphQL schema language
@@ -71,7 +62,6 @@ var typeDfs = buildSchema(`
   }
   
 `);
-
 
 // The root provides a resolver function for each API endpoint
 var resolverr = {
@@ -130,32 +120,11 @@ var resolverr = {
   }
 
 };
-
 app.use('/graphql', graphqlHTTP({
   schema: typeDfs,
   rootValue: resolverr,
   graphiql: true,
 }));
-
-
-
-// Apolo server with graphql
-// Construct a schema, using GraphQL schema language
-/*const typeDefs = gql`
-  type Query {
-    hello: String
-  }
-`;
-
-// Provide resolver functions for your schema fields
-const resolvers = {
-  Query: {
-    hello: () => 'Hello world!',
-  },
-};
-const server = new ApolloServer({ typeDefs, resolvers });
-server.applyMiddleware({ app });
-*/
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
