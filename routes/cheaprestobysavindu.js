@@ -7,11 +7,16 @@ const ab = require('./ab.js');
 router.get('/', function (req, res, next) {
     res.render('index', { title: 'WELCOME TO CHEAP RESTO BACKEND SERVICE', athour: "by savindupasingtha@gmail.com" });
 });
+router.get('/signin', function (req, res, next) {
+    res.render('index', { title: 'WELCOME TO CHEAP RESTO BACKEND SERVICE', athour: "by savindupasingtha@gmail.com" });
+});
+router.get('/signup', function (req, res, next) {
+    res.render('index', { title: 'WELCOME TO CHEAP RESTO BACKEND SERVICE', athour: "by savindupasingtha@gmail.com" });
+});
 router.post('/signup', function (req, res, next) {
     const { email, password } = { email: req.body?.email, password: req.body?.password };
     if (email && password) {
         var query = "INSERT INTO users (email,password) VALUES ('" + email + "','" + password + "')";
-        query = "SELECT * FROM users";
         QueryExecute(query)
             .then((result) => {
                 if (result) {
@@ -37,6 +42,8 @@ router.post('/signin', function (req, res, next) {
                 if (result.length > 0 && result[0].password == password) { sts = true; }
                 if (result) {
                     res.status(200).send({ status: sts, data: { 'error': "no", 'email': email, 'password': password }, mysqldb: {} });
+                } else {
+                    res.status(200).send({ status: sts, data: { 'error': "Yes", 'email': email, 'password': password }, mysqldb: result });
                 }
             })
             .catch((err) => {
